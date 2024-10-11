@@ -21,7 +21,6 @@
             position: relative;
         }
         .container {
-            padding: 20px;
             background-color: rgba(51, 51, 51, 0.8);
             width: 400px;
             border-radius: 10px;
@@ -55,23 +54,56 @@
         }
         .notification {
             position: fixed;
-            top: 400px;
-            right: 50px;
-            background-color: rgba(220, 220, 220, 0.9); /* Fundo cinza */
-            color: black;
+            right: -320px;
+            background-color: #333;
+            color: #fff;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            display: none; /* Esconde a notificação por padrão */
             z-index: 1000;
-            transition: opacity 0.3s ease;
-            display: flex; /* Exibe como um flexbox para alinhar os ícones */
-            align-items: center; /* Alinha verticalmente no centro */
+            width: 320px;
+            height: 60px;
+            transition: right 0.5s ease;
         }
-        .notification img {
-            width: 20px; /* Tamanho do ícone */
-            height: 20px; /* Tamanho do ícone */
-            margin-right: 10px; /* Espaçamento entre o ícone e o texto */
+        .notification-content {
+            position: relative;
+            height: 100%;
+        }
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .notification-content p {
+            margin: 0;
+            padding-top: 0;
+        }
+        .progress-bar {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 5px;
+            background-color: #555;
+            border-radius: 5px;
+            width: 90%;
+            overflow: hidden;
+        }
+        .progress-bar div {
+            height: 100%;
+            background-color: #bbb;
+            width: 100%;
+            animation: progress 5s linear forwards;
+        }
+        @keyframes progress {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0;
+            }
         }
         .profile {
             position: absolute;
@@ -152,75 +184,163 @@
     <div id="notification" class="notification"></div>
 
     <script>
-        // Ao carregar a página, verifica se há uma notificação armazenada e a exibe, se necessário
-        window.onload = function() {
-            if (localStorage.getItem("notification")) {
-                showNotification(localStorage.getItem("notification.message"), localStorage.getItem("notification.type"));
-                localStorage.removeItem("notification"); // Remove a notificação após exibi-la
-            }
-        };
+        let notificationCount = 0;
 
-        function fazerAtividades() {
+        function createAndShowNotification(message) {
+            return new Promise((resolve) => {
+                if (document.getElementById("notification-styles") === null) {
+                    const style = document.createElement("style");
+                    style.id = "notification-styles";
+                    style.innerHTML = `
+                        .notification {
+                            position: fixed;
+                            right: -320px;
+                            background-color: #333;
+                            color: #fff;
+                            padding: 10px;
+                            border-radius: 10px;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+                            z-index: 1000;
+                            width: 320px;
+                            height: 60px;
+                            transition: right 0.5s ease;
+                        }
+                        .notification-content {
+                            position: relative;
+                            height: 100%;
+                        }
+                        .close-btn {
+                            position: absolute;
+                            top: 5px;
+                            right: 10px;
+                            cursor: pointer;
+                            font-size: 20px;
+                        }
+                        .notification-content p {
+                            margin: 0;
+                            padding-top: 0;
+                        }
+                        .progress-bar {
+                            position: absolute;
+                            bottom: 5px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            height: 5px;
+                            background-color: #555;
+                            border-radius: 5px;
+                            width: 90%;
+                            overflow: hidden;
+                        }
+                        .progress-bar div {
+                            height: 100%;
+                            background-color: #bbb;
+                            width: 100%;
+                            animation: progress 5s linear forwards;
+                        }
+                        @keyframes progress {
+                            from {
+                                width: 100%;
+                            }
+                            to {
+                                width: 0;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                notificationCount++;
+                const notification = document.createElement("div");
+                notification.id = `notification-${notificationCount}`;
+                notification.className = "notification";
+                notification.style.bottom = 20 + 70 * (notificationCount - 1) + "px";
+                notification.style.right = "20px";
+                notification.innerHTML = `
+                    <div class="notification-content">
+                        <span id="close-btn-${notificationCount}" class="close-btn">&times;</span>
+                        <p>${message}</p>
+                        <div class="progress-bar"><div></div></div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                document.getElementById(`close-btn-${notificationCount}`).onclick = function() {
+                    notification.style.right = "-300px";
+                    setTimeout(() => {
+                        notification.style.display = "none";
+                        notificationCount--;
+                        resolve();
+                    }, 500);
+                };
+                
+                setTimeout(() => {
+                    notification.style.right = "20px";
+                }, 10);
+                
+                setTimeout(() => {
+                    notification.style.right = "-300px";
+                    setTimeout(() => {
+                        notification.style.display = "none";
+                        notificationCount--;
+                        resolve();
+                    }, 500);
+                }, 5000);
+            });
+        }
+
+        async function delay(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        async function fazerAtividades() {
             var ra = document.getElementById("ra").value;
             var senha = document.getElementById("senha").value;
 
             // Verifica se os campos estão vazios
-            if (!ra || !senha) {
-                saveNotification("Erro: Por favor, preencha todos os campos!", "error");
-                return; // Interrompe a função caso os campos estejam vazios
+            if (ra === "" || senha === "") {
+                alert("Por favor, preencha todos os campos.");
+                return;
             }
 
-            // Se os campos estiverem preenchidos, simule um login e verifique se é bem-sucedido
-            if (ra === "1234567UF" && senha === "senha123") { // Exemplo de login bem-sucedido
-                saveNotification("Login certo! Tarefas carregadas com sucesso. Aguarde enquanto suas tarefas são feitas.", "success");
-            } else {
-                saveNotification("Tarefas não podem ser feitas. Erro ao logar.", "error");
+            createAndShowNotification("Iniciando...");
+
+            // Aqui você pode adicionar sua lógica para fazer as atividades
+            // Simulação de espera
+            await delay(2000); // Exemplo de delay
+
+            createAndShowNotification("Atividades feitas com sucesso!");
+        }
+
+        async function fazerAtividadesExpiradas() {
+            var ra = document.getElementById("ra").value;
+            var senha = document.getElementById("senha").value;
+
+            // Verifica se os campos estão vazios
+            if (ra === "" || senha === "") {
+                alert("Por favor, preencha todos os campos.");
+                return;
             }
+
+            createAndShowNotification("Iniciando atividades expiradas...");
+
+            // Aqui você pode adicionar sua lógica para fazer as atividades expiradas
+            // Simulação de espera
+            await delay(2000); // Exemplo de delay
+
+            createAndShowNotification("Atividades expiradas feitas com sucesso!");
         }
 
-        function saveNotification(message, type) {
-            localStorage.setItem("notification", JSON.stringify({ message: message, type: type })); // Armazena a notificação
-            showNotification(message, type);
-        }
-
-        function showNotification(message, type) {
-            const notification = document.getElementById("notification");
-            notification.innerHTML = ""; // Limpa o conteúdo anterior
-
-            // Adiciona o ícone apropriado com base no tipo
-            const icon = document.createElement("img");
-            icon.src = type === "success" ? "./imagem/103183_checkround_check_yes_ok_accept_icon (1).png" : "./imagem/9110784_circle_x_icon.png"; // URLs dos ícones
-            notification.appendChild(icon);
-
-            // Adiciona a mensagem
-            const text = document.createElement("span");
-            text.innerText = message;
-            notification.appendChild(text);
-
-            notification.style.display = "block"; // Mostra a notificação
-            notification.style.opacity = "1"; // Define a opacidade
-
-            // Esconde a notificação após 3 segundos
-            setTimeout(() => {
-                notification.style.opacity = "0"; // Define a opacidade para 0
-                setTimeout(() => {
-                    notification.style.display = "none"; // Esconde a notificação
-                }, 300); // Aguarda a animação de opacidade
-            }, 3000);
-        }
-
+        // Funções do modal
         function openModal() {
-            document.getElementById("myModal").style.display = "block"; // Abre o modal
+            document.getElementById("myModal").style.display = "block";
         }
 
         function closeModal() {
-            document.getElementById("myModal").style.display = "none"; // Fecha o modal
+            document.getElementById("myModal").style.display = "none";
         }
 
         window.onclick = function(event) {
-            const modal = document.getElementById("myModal");
-            if (event.target == modal) {
-                modal.style.display = "none"; // Fecha o modal se clicar fora dele
+            if (event.target == document.getElementById("myModal")) {
+                closeModal();
             }
         }
     </script>
