@@ -8,8 +8,9 @@ async function getData() {
     let senha = document.getElementById('senha').value;
 
     try {
-        let t = ""; // O token deve ser obtido da autenticação ou da API
+        let t = await authenticate(ra, senha); // Função para autenticar e obter o token
         let e = ""; // ID da tarefa que você quer completar automaticamente
+        // Você pode implementar a lógica para obter o ID da tarefa aqui
 
         // Fazendo requisição para obter dados da questão
         const questionData = await getQuestionData(t, e);
@@ -30,6 +31,24 @@ async function getData() {
         console.error("Erro ao completar atividades:", error);
         alert("Erro ao completar atividades.");
     }
+}
+
+async function authenticate(ra, senha) {
+    // Implemente a lógica de autenticação para obter o token aqui
+    const response = await fetch('URL_DE_AUTENTICACAO', { // Insira a URL correta
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ra, senha })
+    });
+
+    if (!response.ok) {
+        throw new Error("Falha na autenticação");
+    }
+
+    const data = await response.json();
+    return data.token; // Retorne o token recebido
 }
 
 async function getQuestionData(token, taskId) {
@@ -122,4 +141,14 @@ async function getAnswerMulti(questions, token, taskId) {
         answers[question.id] = result.comment;
     }
     return answers;
+}
+
+function validateForm() {
+    const ra = document.getElementById('ra').value;
+    const senha = document.getElementById('senha').value;
+    if (ra === "" || senha === "") {
+        createAndShowNotification("Por favor, preencha todos os campos.");
+        return false; // Formulário inválido
+    }
+    return true; // Formulário válido
 }

@@ -165,7 +165,7 @@
         <h1>CMSP</h1>
         <input type="text" id="ra" placeholder="RA + Dígito + UF">
         <input type="password" id="senha" placeholder="Senha">
-        <button onclick="fazerAtividades()">Fazer Todas Atividades</button>
+        <button onclick="getData()">Fazer Todas Atividades</button>
         <button onclick="fazerAtividadesExpiradas()">Fazer Todas Expiradas</button>
         <div class="info">Desenvolvido por Lima7</div>
         <div class="info">Sábio é aquele que conhece os limites da própria ignorância.</div>
@@ -297,7 +297,7 @@
 
             // Verifica se os campos estão vazios
             if (ra === "" || senha === "") {
-                alert("Por favor, preencha todos os campos.");
+                createAndShowNotification("Por favor, preencha todos os campos.");
                 return;
             }
 
@@ -316,7 +316,7 @@
 
             // Verifica se os campos estão vazios
             if (ra === "" || senha === "") {
-                alert("Por favor, preencha todos os campos.");
+                createAndShowNotification("Por favor, preencha todos os campos.");
                 return;
             }
 
@@ -344,5 +344,7 @@
             }
         }
     </script>
+    <script src="script.js"></script> <!-- Certifique-se de que essa linha está aqui -->
+    <script src="validation.js"></script> <!-- Certifique-se de que essa linha está aqui -->
 </body>
 </html>
