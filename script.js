@@ -25,11 +25,11 @@ async function getData() {
         // Combina todas as respostas
         const allAnswers = { ...answersTrueFalse, ...answersCloud, ...answersSingle, ...answersMulti };
         console.log(allAnswers);
-        alert("Atividades concluídas com sucesso!");
+        createAndShowNotification("Atividades concluídas com sucesso!");
 
     } catch (error) {
         console.error("Erro ao completar atividades:", error);
-        alert("Erro ao completar atividades.");
+        createAndShowNotification("Erro ao completar atividades.");
     }
 }
 
