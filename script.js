@@ -10,6 +10,18 @@ async function getData() {
 
     try {
         let token = await authenticate(ra, senha); // Autentica e obtém o token
+
+        function validateForm() {
+            const ra = document.getElementById('ra').value;
+            const senha = document.getElementById('senha').value;
+            console.log("RA:", ra, "Senha:", senha); // Exibe os valores no console
+            if (ra === "" || senha === "") {
+                createAndShowNotification("Por favor, preencha todos os campos.");
+                return false; // Formulário inválido
+            }
+            return true; // Formulário válido
+        }
+        
         
         // Obtém todas as tarefas disponíveis
         const tasks = await getAllTasks(token);
@@ -59,6 +71,9 @@ async function authenticate(ra, senha) {
 
     const data = await response.json();
     return data.token; // Retorne o token recebido
+    let token = await authenticate(ra, senha);
+console.log("Token recebido: ", token);
+
 }
 
 // Função para obter todas as tarefas
